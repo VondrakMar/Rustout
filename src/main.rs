@@ -25,17 +25,18 @@ use building::Floor;
 
 
 fn is_dweller_in(dweller: &Dweller,ghost_dweller: &Dweller,room: &mut Room,canvas: &mut Canvas<Window>){
-    if (dweller.center_x == room.x+10 && ghost_dweller.center_x == room.x-10) && (dweller.center_y > room.y && dweller.center_y < room.y + LENGHT_ROOM) {
+    if (dweller.x == room.x+10 && ghost_dweller.x == room.x-10) && (dweller.y > room.y && dweller.y < room.y + LENGHT_ROOM) {
         room.dweller_entered(canvas);
     }
-    else if (dweller.center_x == room.x-10 && ghost_dweller.center_x == room.x+10) && (dweller.center_y > room.y && dweller.center_y < room.y + LENGHT_ROOM) {
+    else if (dweller.x == room.x && ghost_dweller.x == room.x) && (dweller.y > room.y && dweller.y < room.y + LENGHT_ROOM) {
         room.dweller_left(canvas);
     }
 }
 
 fn is_dweller_on_the_floor(dweller: &Dweller, floors: &Vec<Floor>)->bool{
     for floor in floors{
-        if dweller.center_x > floor.x_start && dweller.center_x < floor.x_start + floor.x_units*LENGHT_DWELLER{
+        println!("{} {} {} {}",dweller.x,dweller.center_x, floor.x_start, floor.x_start + floor.x_units*LENGHT_DWELLER);
+        if dweller.x >= floor.x_start && dweller.x < floor.x_start + floor.x_units*LENGHT_DWELLER{
             if dweller.center_y+10 == floor.y{
                 return true;
             }
@@ -74,16 +75,23 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
     let mut main_dweller = Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5));
     // let mut second_dweller = Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5));
-    let mut main_room = Room::new(200,200,4,2,Color::RGB(200,0,0));
-    let mut test_floor = Floor::new(80,10,100);
-    let mut test_floor2 = Floor::new(160,50,700);
+    // let mut room1 = Room::new(200,200,4,2,Color::RGB(200,0,0));
+    // let mut room2 = Room::new(600,600,2,1,Color::RGB(200,100,0));
     // let mut button = Button::new(350, 250, 100, 50);
     let mut list_of_floors: Vec<Floor> = vec![];
-    list_of_floors.push(test_floor);
-    list_of_floors.push(test_floor2);
+    let mut list_of_rooms: Vec<Room> = vec![];
+    // let mut test_floor = Floor::new(80,10,100);
+    // let mut test_floor2 = Floor::new(160,50,700);
+    // list_of_floors.push(test_floor);
+    // list_of_floors.push(test_floor2);
+    list_of_floors.push(Floor::new(20,10,100));
+    list_of_floors.push(Floor::new(20,10,700));
+    list_of_rooms.push(Room::new(200,200,4,2,Color::RGB(200,0,0)));
+    list_of_rooms.push(Room::new(600,600,2,1,Color::RGB(200,100,0)));
 
     'running: loop {
         let is_floor = is_dweller_on_the_floor(&main_dweller,&list_of_floors);
+        main_dweller.free_fall(is_floor,1);
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} => {break 'running;}
@@ -103,6 +111,9 @@ fn main() -> Result<(), String> {
                         // main_dweller.move_dweller(Some(keycode));
                         // is_dweller_in(&main_dweller,&ghost_dweller,&mut main_room,&mut canvas);
                     }
+                    else if keycode == sdl2::keyboard::Keycode::R{
+                        main_dweller.restart_position();
+                    }
                 }
                         
                 
@@ -111,7 +122,7 @@ fn main() -> Result<(), String> {
                 }
             }
         }
-        println!("{}",is_floor);
+        // println!("{}",is_floor);
         canvas.set_draw_color(Color::RGB(255, 255, 255));
         canvas.clear();
         if true{
@@ -129,13 +140,16 @@ fn main() -> Result<(), String> {
         for floor in &list_of_floors{
             floor.render(&mut canvas);
         }
+        for room in &list_of_rooms{
+            room.render(&mut canvas);
+        }
+        // main_room.render(&mut canvas);
         main_dweller.render(&mut canvas);
-        main_room.render(&mut canvas);
         // test_floor.render(&mut canvas);
         // button.render(&mut canvas);
         canvas.present();
-        // Sleep for a short duration to avoid high CPU usage
-        std::thread::sleep(Duration::from_millis(16));
+        // std::thread::sleep(Duration::from_millis(16));
+        std::thread::sleep(Duration::from_millis(50));
     }
 
     Ok(())

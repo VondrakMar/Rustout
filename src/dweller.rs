@@ -17,7 +17,9 @@ pub struct Dweller{
     pub y: i32,
     pub center_x: i32,
     pub center_y: i32,
-    pub dweller_color: Color
+    pub dweller_color: Color,
+    is_active: bool,
+    working_gravity: bool
 }
 
 
@@ -29,7 +31,9 @@ impl Dweller{
             center_y: y,
             x:x - 2*LENGHT_UNIT,
             y:y - 2*LENGHT_UNIT,
-            dweller_color:col
+            dweller_color:col,
+            is_active: false,
+            working_gravity: false
         }
     }
 
@@ -40,7 +44,7 @@ impl Dweller{
     pub fn move_dweller(&mut self, keycode: Option<Keycode>){
         if keycode.unwrap() == sdl2::keyboard::Keycode::Right {
             self.x += LENGHT_DWELLER;
-            self.center_x += LENGHT_DWELLER;
+            // self.center_x += LENGHT_DWELLER;
             self.dweller_body.set_x(self.x);
         }
         else if keycode.unwrap() == sdl2::keyboard::Keycode::Left {
@@ -58,5 +62,21 @@ impl Dweller{
             self.center_y += LENGHT_DWELLER;
             self.dweller_body.set_y(self.y);
         }
+    }
+    pub fn free_fall(&mut self,is_floor:bool, speed: i32){
+        if !is_floor && self.working_gravity{
+            self.y += LENGHT_DWELLER*speed;
+            self.center_y += LENGHT_DWELLER*speed;
+            self.dweller_body.set_y(self.y);
+        }
+    }
+    pub fn restart_position(&mut self){
+        self.center_y = 150;
+        self.center_x = 150;
+        self.x = 150 - 2*LENGHT_UNIT;
+        self.y = 150 - 2*LENGHT_UNIT;
+        self.dweller_body.set_y(self.y);
+        self.dweller_body.set_x(self.x);
+        self.working_gravity = !self.working_gravity; 
     }
 }
