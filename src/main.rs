@@ -7,6 +7,7 @@ use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::mouse::MouseButton;
 use std::time::Duration;
 
 
@@ -35,7 +36,6 @@ fn is_dweller_in(dweller: &Dweller,ghost_dweller: &Dweller,room: &mut Room,canva
 
 fn is_dweller_on_the_floor(dweller: &Dweller, floors: &Vec<Floor>)->bool{
     for floor in floors{
-        println!("{} {} {} {}",dweller.x,dweller.center_x, floor.x_start, floor.x_start + floor.x_units*LENGHT_DWELLER);
         if dweller.x >= floor.x_start && dweller.x < floor.x_start + floor.x_units*LENGHT_DWELLER{
             if dweller.center_y+10 == floor.y{
                 return true;
@@ -73,25 +73,25 @@ fn main() -> Result<(), String> {
 
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
     let mut event_pump = sdl_context.event_pump()?;
-    let mut main_dweller = Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5));
+    // let mut main_dweller = Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5));
     // let mut second_dweller = Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5));
     // let mut room1 = Room::new(200,200,4,2,Color::RGB(200,0,0));
     // let mut room2 = Room::new(600,600,2,1,Color::RGB(200,100,0));
     // let mut button = Button::new(350, 250, 100, 50);
     let mut list_of_floors: Vec<Floor> = vec![];
     let mut list_of_rooms: Vec<Room> = vec![];
-    // let mut test_floor = Floor::new(80,10,100);
-    // let mut test_floor2 = Floor::new(160,50,700);
-    // list_of_floors.push(test_floor);
-    // list_of_floors.push(test_floor2);
+    let mut list_of_dweller: Vec<Dweller> = vec![];
     list_of_floors.push(Floor::new(20,10,100));
     list_of_floors.push(Floor::new(20,10,700));
     list_of_rooms.push(Room::new(200,200,4,2,Color::RGB(200,0,0)));
     list_of_rooms.push(Room::new(600,600,2,1,Color::RGB(200,100,0)));
-
+    list_of_dweller.push(Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5)));
+    list_of_dweller.push(Dweller::new(400,150,0.0,0.0,Color::RGB(5,0,0)));
+    list_of_dweller.push(Dweller::new(500,500,0.0,0.0,Color::RGB(50,150,50)));
+    let mut id_active_dweller: usize = 0;
     'running: loop {
-        let is_floor = is_dweller_on_the_floor(&main_dweller,&list_of_floors);
-        main_dweller.free_fall(is_floor,1);
+        let is_floor = is_dweller_on_the_floor(&mut list_of_dweller[id_active_dweller],&list_of_floors);
+        list_of_dweller[id_active_dweller].free_fall(is_floor,1);
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} => {break 'running;}
@@ -100,21 +100,34 @@ fn main() -> Result<(), String> {
                 }
                 Event::KeyDown{keycode: Some(keycode),..}=>{
                     if keycode == sdl2::keyboard::Keycode::Up{
-                        move_dweller_up(&mut main_dweller,is_floor,Some(keycode));
+                        move_dweller_up(&mut list_of_dweller[id_active_dweller],is_floor,Some(keycode));  
                     }
                     else if keycode == sdl2::keyboard::Keycode::Down{
-                        move_dweller_down(&mut main_dweller,is_floor,Some(keycode));                    
+                        move_dweller_down(&mut list_of_dweller[id_active_dweller],is_floor,Some(keycode));                    
                     }    
                     else if keycode == sdl2::keyboard::Keycode::Left||keycode == sdl2::keyboard::Keycode::Right{
-                        move_dweller_horizontlly(&mut main_dweller,Some(keycode));
-                        // let ghost_dweller = Dweller::new(main_dweller.center_x,main_dweller.center_y,0.0,0.0,Color::RGB(25,25,25));
-                        // main_dweller.move_dweller(Some(keycode));
-                        // is_dweller_in(&main_dweller,&ghost_dweller,&mut main_room,&mut canvas);
+                        // move_dweller_horizontlly(&mut main_dweller,Some(keycode));
+                        move_dweller_horizontlly(&mut list_of_dweller[id_active_dweller],Some(keycode));
                     }
                     else if keycode == sdl2::keyboard::Keycode::R{
-                        main_dweller.restart_position();
+                        list_of_dweller[id_active_dweller].restart_position();
                     }
                 }
+                // Event::MouseMotion { x, y, .. } => {
+                    // for (index, dweller) in list_of_dweller.iter_mut().enumerate() {
+                        // dweller.is_hovered = dweller.dweller_body.contains_point((x, y));
+                    // }
+                // }
+                Event::MouseButtonDown { x, y, mouse_btn, .. } => {
+                    for (index, dweller) in list_of_dweller.iter_mut().enumerate() {
+                        if mouse_btn == MouseButton::Left && dweller.dweller_body.contains_point((x, y)) {
+                            id_active_dweller = index;
+                        }
+                    }
+                }
+                // Event::MouseButtonDown {x,y,...}{
+                    // self.rect.contains_point((*x, *y));
+                // } 
                         
                 
                 _ => {
@@ -143,8 +156,11 @@ fn main() -> Result<(), String> {
         for room in &list_of_rooms{
             room.render(&mut canvas);
         }
-        // main_room.render(&mut canvas);
-        main_dweller.render(&mut canvas);
+        for dweller in &list_of_dweller{
+            dweller.render(&mut canvas);
+        }
+
+        // main_dweller.render(&mut canvas);
         // test_floor.render(&mut canvas);
         // button.render(&mut canvas);
         canvas.present();

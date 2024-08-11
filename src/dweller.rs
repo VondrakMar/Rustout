@@ -18,7 +18,7 @@ pub struct Dweller{
     pub center_x: i32,
     pub center_y: i32,
     pub dweller_color: Color,
-    is_active: bool,
+    pub is_hovered: bool,
     working_gravity: bool
 }
 
@@ -32,7 +32,7 @@ impl Dweller{
             x:x - 2*LENGHT_UNIT,
             y:y - 2*LENGHT_UNIT,
             dweller_color:col,
-            is_active: false,
+            is_hovered: false,
             working_gravity: false
         }
     }
