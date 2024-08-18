@@ -1,0 +1,6 @@
+Dweller 1 5
+dweller 15 3
+dweller 25 12
+Room 10 10 4 4
+Room 20 30 2 3
+Floor 2 4 14

@@ -13,6 +13,7 @@ use std::time::Duration;
 
 mod utils;
 // use utils::utils::Button;
+use utils::utils::MapGrid;
 mod dweller;
 use dweller::Dweller;
 mod my_consts;
@@ -72,6 +73,11 @@ fn main() -> Result<(), String> {
         .map_err(|e| e.to_string())?;
 
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
+    let (map_width, map_height) = canvas.output_size().unwrap();
+    let mut my_grid = MapGrid::new(LENGHT_DWELLER as usize, map_width, map_height);
+    // my_grid.load_map("penis",&mut canvas);
+    my_grid.calculate_grid();
+    // my_grid.save_map();
     let mut event_pump = sdl_context.event_pump()?;
     // let mut main_dweller = Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5));
     // let mut second_dweller = Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5));
@@ -81,13 +87,7 @@ fn main() -> Result<(), String> {
     let mut list_of_floors: Vec<Floor> = vec![];
     let mut list_of_rooms: Vec<Room> = vec![];
     let mut list_of_dweller: Vec<Dweller> = vec![];
-    list_of_floors.push(Floor::new(20,10,100));
-    list_of_floors.push(Floor::new(20,10,700));
-    list_of_rooms.push(Room::new(200,200,4,2,Color::RGB(200,0,0)));
-    list_of_rooms.push(Room::new(600,600,2,1,Color::RGB(200,100,0)));
-    list_of_dweller.push(Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5)));
-    list_of_dweller.push(Dweller::new(400,150,0.0,0.0,Color::RGB(5,0,0)));
-    list_of_dweller.push(Dweller::new(500,500,0.0,0.0,Color::RGB(50,150,50)));
+    my_grid.load_map(&mut canvas,&mut list_of_dweller,&mut list_of_rooms,&mut list_of_floors);
     let mut id_active_dweller: usize = 0;
     'running: loop {
         let is_floor = is_dweller_on_the_floor(&mut list_of_dweller[id_active_dweller],&list_of_floors);
@@ -138,27 +138,14 @@ fn main() -> Result<(), String> {
         // println!("{}",is_floor);
         canvas.set_draw_color(Color::RGB(255, 255, 255));
         canvas.clear();
-        if true{
-            let (width, height) = canvas.output_size().unwrap();
-            let grid_spacing = LENGHT_DWELLER as usize;
-            canvas.set_draw_color(Color::RGB(0, 0, 0));
-            for x in (0..width).step_by(grid_spacing) {
-                canvas.draw_line(Point::new(x as i32, 0), Point::new(x as i32, height as i32)).unwrap();
-            }
-            for y in (0..height).step_by(grid_spacing) {
-                canvas.draw_line(Point::new(0, y as i32), Point::new(width as i32, y as i32)).unwrap();
-            }
-        }
+        my_grid.render(&mut canvas,&list_of_dweller,&list_of_rooms,&list_of_floors);
+        // for floor in &list_of_floors{
+        //     floor.render(&mut canvas);
+        // }
+        // for room in &list_of_rooms{
+        //     room.render(&mut canvas);
+        // }
 
-        for floor in &list_of_floors{
-            floor.render(&mut canvas);
-        }
-        for room in &list_of_rooms{
-            room.render(&mut canvas);
-        }
-        for dweller in &list_of_dweller{
-            dweller.render(&mut canvas);
-        }
 
         // main_dweller.render(&mut canvas);
         // test_floor.render(&mut canvas);
