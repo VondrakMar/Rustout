@@ -75,15 +75,9 @@ fn main() -> Result<(), String> {
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
     let (map_width, map_height) = canvas.output_size().unwrap();
     let mut my_grid = MapGrid::new(LENGHT_DWELLER as usize, map_width, map_height);
-    // my_grid.load_map("penis",&mut canvas);
     my_grid.calculate_grid();
     // my_grid.save_map();
     let mut event_pump = sdl_context.event_pump()?;
-    // let mut main_dweller = Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5));
-    // let mut second_dweller = Dweller::new(150,150,0.0,0.0,Color::RGB(5,5,5));
-    // let mut room1 = Room::new(200,200,4,2,Color::RGB(200,0,0));
-    // let mut room2 = Room::new(600,600,2,1,Color::RGB(200,100,0));
-    // let mut button = Button::new(350, 250, 100, 50);
     let mut list_of_floors: Vec<Floor> = vec![];
     let mut list_of_rooms: Vec<Room> = vec![];
     let mut list_of_dweller: Vec<Dweller> = vec![];
@@ -135,21 +129,9 @@ fn main() -> Result<(), String> {
                 }
             }
         }
-        // println!("{}",is_floor);
         canvas.set_draw_color(Color::RGB(255, 255, 255));
         canvas.clear();
         my_grid.render(&mut canvas,&list_of_dweller,&list_of_rooms,&list_of_floors);
-        // for floor in &list_of_floors{
-        //     floor.render(&mut canvas);
-        // }
-        // for room in &list_of_rooms{
-        //     room.render(&mut canvas);
-        // }
-
-
-        // main_dweller.render(&mut canvas);
-        // test_floor.render(&mut canvas);
-        // button.render(&mut canvas);
         canvas.present();
         // std::thread::sleep(Duration::from_millis(16));
         std::thread::sleep(Duration::from_millis(50));
